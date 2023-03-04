@@ -41,7 +41,7 @@ Curriculum Schema:
     pos_lambda: Weight parameter for experimental positional consistency loss.
     last_back: Flag to fill in background color with last sampled color on ray.
 """
-
+#训练和评估的大部分超参数
 import math
 
 def next_upsample_step(curriculum, current_step):
