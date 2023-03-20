@@ -28,25 +28,31 @@ import copy
 
 from torch_ema import ExponentialMovingAverage
 
+#多节点分布式训练的设置
 def setup(rank, world_size, port):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = port
+    os.environ['MASTER_ADDR'] = 'localhost'   #设置环境变量MASTER_ADDR为localhost，即当前主机
+    os.environ['MASTER_PORT'] = port    #设置环境变量MASTER_PORT为指定的端口号
 
-    # initialize the process group
+    # 初始化进程组
+    # 参数gloo表示使用Gloo后端，即一种基于消息传递的分布式通信框架；
+    # 参数rank表示当前进程的排名，取值范围为[0,world_size-1]；
+    # 参数world_size表示进程总数
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
 
-
+# 清理分布式进程组
 def cleanup():
     dist.destroy_process_group()
 
+# 加载Image列表(images)到内存
 def load_images(images, curriculum, device):
-    return_images = []
-    head = 0
+    return_images = []        #创建空的列表存储处理后的图像
+    head = 0           #初始化头指针head
+    # 遍历curriculum中的每个阶段(stage)
     for stage in curriculum['stages']:
-        stage_images = images[head:head + stage['batch_size']]
-        stage_images = F.interpolate(stage_images, size=stage['img_size'],  mode='bilinear', align_corners=True)
-        return_images.append(stage_images)
-        head += stage['batch_size']
+        stage_images = images[head:head + stage['batch_size']]   # 从images列表中取出一定数量的图像
+        stage_images = F.interpolate(stage_images, size=stage['img_size'],  mode='bilinear', align_corners=True)  # 将其调整为指定的img_size大小
+        return_images.append(stage_images)     # 将处理后的图像添加到return_images列表中
+        head += stage['batch_size']     # 头指针head加上当前阶段(stage)中定义的批量大小(batch_size)
     return return_images
 
 
@@ -383,18 +389,27 @@ def train(rank, world_size, opt):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_epochs", type=int, default=3000, help="number of epochs of training")
+    # 指定训练过程中的epoch数
+    parser.add_argument("--n_epochs", type=int, default=1000, help="number of epochs of training")
+    # 指定在多少个epoch后进行一次采样
     parser.add_argument("--sample_interval", type=int, default=200, help="interval between image sampling")
+    # 指定输出目录
     parser.add_argument('--output_dir', type=str, default='debug')
+    # 指定加载已保存模型的目录
     parser.add_argument('--load_dir', type=str, default='')
+    # 指定使用的课程数据集
     parser.add_argument('--curriculum', type=str, required=True)
-    parser.add_argument('--eval_freq', type=int, default=5000)
+    # 指定在多少个epoch后进行一次评估
+    parser.add_argument('--eval_freq', type=int, default=500)
+    # 指定端口号
     parser.add_argument('--port', type=str, default='12355')
+    # 设置当前step
     parser.add_argument('--set_step', type=int, default=None)
-    parser.add_argument('--model_save_interval', type=int, default=5000)
+    # 指定在多少个epoch后保存一次模型
+    parser.add_argument('--model_save_interval', type=int, default=500)
 
-    opt = parser.parse_args()
+    opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)
-    os.makedirs(opt.output_dir, exist_ok=True)
-    num_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
-    mp.spawn(train, args=(num_gpus, opt), nprocs=num_gpus, join=True)
+    os.makedirs(opt.output_dir, exist_ok=True)  # 创建一个新的输出目录
+    num_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))  # 获取系统环境变量CUDA_VISIBLE_DEVICES的值，获取可用GPU数
+    mp.spawn(train, args=(num_gpus, opt), nprocs=num_gpus, join=True)  # mp.spawn()方法在多个进程上运行train()函数

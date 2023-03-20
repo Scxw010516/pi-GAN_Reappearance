@@ -201,14 +201,20 @@ CARLA = {
     'learnable_dist': False,
 }
 
-
+'''
+  batch_size。批量大小。
+  num_steps: 沿着射线的样本数。
+  img_size。生成的图像分辨率。
+  batch_split。整数，在此基础上划分批次并按顺序聚合。(由于内存限制而使用)
+  gen_lr。生成器的学习率。
+  disc_lr: 鉴别器学习率。
+'''
 
 CATS = {
-    0: {'batch_size': 28, 'num_steps': 24, 'img_size': 64, 'batch_split': 4, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    0: {'batch_size': 18, 'num_steps': 24, 'img_size': 64, 'batch_split': 9, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
     int(200e3): {},
 
-
-    'dataset_path': '/home/ericryanchan/graf-beta/data/carla/carla/*.png',
+    'dataset_path': '/content/pi-GAN_Reappearance/data/cats/CAT_00/*.jpg',
     'fov': 12,
     'ray_start': 0.8,
     'ray_end': 1.2,
