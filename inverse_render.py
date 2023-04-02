@@ -5,7 +5,6 @@ import os
 from torchvision.utils import save_image
 
 import torch
-import numpy as np
 from PIL import Image
 from tqdm import tqdm
 import numpy as np

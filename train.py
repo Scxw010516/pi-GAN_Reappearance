@@ -25,7 +25,6 @@ import curriculums
 from tqdm import tqdm
 from datetime import datetime
 import copy
-
 from torch_ema import ExponentialMovingAverage
 
 #多节点分布式训练的设置
