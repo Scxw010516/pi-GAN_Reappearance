@@ -25,6 +25,7 @@ import curriculums
 from tqdm import tqdm
 from datetime import datetime
 import copy
+
 from torch_ema import ExponentialMovingAverage
 
 #多节点分布式训练的设置
@@ -63,7 +64,7 @@ def z_sampler(shape, device, dist):
     return z
 
 
-def train(rank, world_size, opt):
+def train(rank, world_size, opt, ema=None, ema2=None):
     torch.manual_seed(0)
 
     setup(rank, world_size, opt.port)
@@ -84,8 +85,8 @@ def train(rank, world_size, opt):
     if opt.load_dir != '':
         generator = torch.load(os.path.join(opt.load_dir, 'generator.pth'), map_location=device)
         discriminator = torch.load(os.path.join(opt.load_dir, 'discriminator.pth'), map_location=device)
-        ema = torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device)
-        ema2 = torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device)
+        ema.load_state_dict = torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device)
+        ema2.load_state_dict = torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device)
     else:
         generator = getattr(generators, metadata['generator'])(SIREN, metadata['latent_dim']).to(device)
         discriminator = getattr(discriminators, metadata['discriminator'])().to(device)
@@ -182,8 +183,8 @@ def train(rank, world_size, opt):
             if discriminator.step % opt.model_save_interval == 0 and rank == 0:
                 now = datetime.now()
                 now = now.strftime("%d--%H:%M--")
-                torch.save(ema, os.path.join(opt.output_dir, now + 'ema.pth'))
-                torch.save(ema2, os.path.join(opt.output_dir, now + 'ema2.pth'))
+                torch.save(ema.state_dict(), os.path.join(opt.output_dir, now + 'ema.pth'))
+                torch.save(ema2.state_dict(), os.path.join(opt.output_dir, now + 'ema2.pth'))
                 torch.save(generator_ddp.module, os.path.join(opt.output_dir, now + 'generator.pth'))
                 torch.save(discriminator_ddp.module, os.path.join(opt.output_dir, now + 'discriminator.pth'))
                 torch.save(optimizer_G.state_dict(), os.path.join(opt.output_dir, now + 'optimizer_G.pth'))
@@ -349,8 +350,8 @@ def train(rank, world_size, opt):
                     ema.restore(generator_ddp.parameters())
 
                 if discriminator.step % opt.sample_interval == 0:
-                    torch.save(ema, os.path.join(opt.output_dir, 'ema.pth'))
-                    torch.save(ema2, os.path.join(opt.output_dir, 'ema2.pth'))
+                    torch.save(ema.state_dict(), os.path.join(opt.output_dir, 'ema.pth'))
+                    torch.save(ema2.state_dict(), os.path.join(opt.output_dir, 'ema2.pth'))
                     torch.save(generator_ddp.module, os.path.join(opt.output_dir, 'generator.pth'))
                     torch.save(discriminator_ddp.module, os.path.join(opt.output_dir, 'discriminator.pth'))
                     torch.save(optimizer_G.state_dict(), os.path.join(opt.output_dir, 'optimizer_G.pth'))
@@ -409,5 +410,9 @@ if __name__ == '__main__':
     opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)
     os.makedirs(opt.output_dir, exist_ok=True)  # 创建一个新的输出目录
-    num_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))  # 获取系统环境变量CUDA_VISIBLE_DEVICES的值，获取可用GPU数
+    #mp.set_start_method('spawn')  # 设置进程启动方法为 'spawn'
+    # mp.set_start_method('fork')
+    # num_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))  # 获取系统环境变量CUDA_VISIBLE_DEVICES的值，获取可用GPU数
+    num_gpus = 1
     mp.spawn(train, args=(num_gpus, opt), nprocs=num_gpus, join=True)  # mp.spawn()方法在多个进程上运行train()函数
+    # train(0, 1, opt)

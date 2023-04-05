@@ -12,11 +12,10 @@ import argparse
 
 from torchvision.utils import save_image
 from pytorch_fid import fid_score
-from tqdm import tqdm
+import tqdm
 
 import datasets
 import curriculums
-
 
 def output_real_images(dataloader, num_imgs, real_dir):
     img_counter = 0
@@ -57,7 +56,7 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
     generator.eval()
     img_counter = rank
 
-    if rank == 0: pbar = tqdm("generating images", total = num_imgs)
+    if rank == 0: pbar = tqdm.tqdm("generating images", total = num_imgs)
     with torch.no_grad():
         while img_counter < num_imgs:
             z = torch.randn((metadata['batch_size'], generator.module.z_dim), device=generator.module.device)
