@@ -81,7 +81,7 @@ def get_dataset(name, subsample=None, batch_size=1, **kwargs):
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=True,
         pin_memory=False,
         num_workers=8
