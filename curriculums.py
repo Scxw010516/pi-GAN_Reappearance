@@ -211,10 +211,10 @@ CARLA = {
 '''
 
 CATS = {
-    0: {'batch_size': 18, 'num_steps': 24, 'img_size': 64, 'batch_split': 9, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    0: {'batch_size': 20, 'num_steps': 24, 'img_size': 64, 'batch_split': 9, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
     int(200e3): {},
 
-    'dataset_path': 'data/cats/CAT_00/*.jpg',
+    'dataset_path': 'D:/DataSets/Cats/Cats_train/*.jpg',
     'fov': 12,
     'ray_start': 0.8,
     'ray_end': 1.2,

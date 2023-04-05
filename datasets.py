@@ -76,6 +76,8 @@ class Carla(Dataset):
 
 
 def get_dataset(name, subsample=None, batch_size=1, **kwargs):
+    if name not in globals():
+        raise ValueError(f"Unknown dataset: {name}")
     dataset = globals()[name](**kwargs)
 
     dataloader = torch.utils.data.DataLoader(

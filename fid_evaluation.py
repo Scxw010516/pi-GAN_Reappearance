@@ -68,7 +68,7 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
                 if rank == 0: pbar.update(world_size)
     if rank == 0: pbar.close()
 
-def calculate_fid(dataset_name, generated_dir, target_size=256):
+def calculate_fid(dataset_name, generated_dir, target_size=128):
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
     fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 128, 'cuda', 2048)
     torch.cuda.empty_cache()
@@ -77,9 +77,9 @@ def calculate_fid(dataset_name, generated_dir, target_size=256):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='CelebA')
-    parser.add_argument('--img_size', type=int, default=128)
-    parser.add_argument('--num_imgs', type=int, default=8000)
+    parser.add_argument('--dataset', type=str, default='CATS')
+    parser.add_argument('--img_size', type=int, default=64)
+    parser.add_argument('--num_imgs', type=int, default=7520)
 
     opt = parser.parse_args()
 

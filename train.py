@@ -63,7 +63,6 @@ def z_sampler(shape, device, dist):
         z = torch.rand(shape, device=device) * 2 - 1
     return z
 
-
 def train(rank, world_size, opt, ema=None, ema2=None):
     torch.manual_seed(0)
 
@@ -85,8 +84,10 @@ def train(rank, world_size, opt, ema=None, ema2=None):
     if opt.load_dir != '':
         generator = torch.load(os.path.join(opt.load_dir, 'generator.pth'), map_location=device)
         discriminator = torch.load(os.path.join(opt.load_dir, 'discriminator.pth'), map_location=device)
-        ema.load_state_dict = torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device)
-        ema2.load_state_dict = torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device)
+        ema = ExponentialMovingAverage(generator.parameters(), decay=0.999)
+        ema2 = ExponentialMovingAverage(generator.parameters(), decay=0.9999)
+        ema.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device))
+        ema2.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device))
     else:
         generator = getattr(generators, metadata['generator'])(SIREN, metadata['latent_dim']).to(device)
         discriminator = getattr(discriminators, metadata['discriminator'])().to(device)
@@ -390,22 +391,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # 指定训练过程中的epoch数
     parser.add_argument("--n_epochs", type=int, default=1000, help="number of epochs of training")
-    # 指定在多少个epoch后进行一次采样
-    parser.add_argument("--sample_interval", type=int, default=200, help="interval between image sampling")
+    # 指定在多少个steps后进行一次采样
+    parser.add_argument("--sample_interval", type=int, default=376, help="interval between image sampling")
     # 指定输出目录
     parser.add_argument('--output_dir', type=str, default='debug')
     # 指定加载已保存模型的目录
     parser.add_argument('--load_dir', type=str, default='')
     # 指定使用的课程数据集
     parser.add_argument('--curriculum', type=str, required=True)
-    # 指定在多少个epoch后进行一次评估
-    parser.add_argument('--eval_freq', type=int, default=500)
+    # 指定在多少个steps后进行一次评估
+    parser.add_argument('--eval_freq', type=int, default=3760)
     # 指定端口号
     parser.add_argument('--port', type=str, default='12355')
     # 设置当前step
     parser.add_argument('--set_step', type=int, default=None)
-    # 指定在多少个epoch后保存一次模型
-    parser.add_argument('--model_save_interval', type=int, default=500)
+    # 指定在多少个steps后保存一次模型
+    parser.add_argument('--model_save_interval', type=int, default=3760)
 
     opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)
