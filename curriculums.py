@@ -246,7 +246,7 @@ CATS = {
 }
 
 Ear = {
-    0: {'batch_size': 14, 'num_steps': 24, 'img_size': 64, 'batch_split': 7, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    0: {'batch_size': 14, 'num_steps': 24, 'img_size': 64, 'batch_split': 7, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
     int(200e3): {},
 
     'dataset_path': 'D:/DataSets/Ear/Ear_train/*.jpg',

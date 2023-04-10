@@ -419,3 +419,4 @@ if __name__ == '__main__':
     num_gpus = 1
     mp.spawn(train, args=(num_gpus, opt), nprocs=num_gpus, join=True)  # mp.spawn()方法在多个进程上运行train()函数
     # train(0, 1, opt)
+    # python train.py --curriculum Ear --output_dir EarOutputDir2
