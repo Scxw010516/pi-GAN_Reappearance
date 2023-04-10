@@ -244,3 +244,40 @@ CATS = {
     'last_back': False,
     'eval_last_back': True,
 }
+
+Ear = {
+    0: {'batch_size': 14, 'num_steps': 24, 'img_size': 64, 'batch_split': 7, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    int(200e3): {},
+
+    'dataset_path': 'D:/DataSets/Ear/Ear_train/*.jpg',
+    'fov': 12,     # 相机视场
+    'ray_start': 0.8,  # 摄像机射线的近端剪裁
+    'ray_end': 1.2,  # 摄像机射线的远端剪裁
+    'fade_steps': 10000,   # 上采样后，在判别器上淡化新层的步骤数
+    'h_stddev': math.pi,   # 相机水平角度的变化，单位为弧度
+    'v_stddev': math.pi/4 * 85/90,   # 相机垂直角度的变化，单位为弧度
+    'h_mean': math.pi*0.5,   # 相机水平偏航的平均值
+    'v_mean': math.pi/4 * 85/90,   # 相机垂直偏航的平均值
+    'sample_dist': 'spherical_uniform',   # 相机姿态分布的类型。(高斯｜球面均匀｜均匀）(gaussian | spherical_uniform | uniform)
+    'topk_interval': 1000,   # topk间隔
+    'topk_v': 1,   # 在topk训练过程中保留的最小批次的分数
+    'betas': (0, 0.9),   # Adam的Beta参数
+    'unique_lr': False,   # 是否在映射网络中使用减少的LRs
+    'weight_decay': 0,   # 权重衰减参数
+    'r1_lambda': 10,   # R1正则化参数
+    'latent_dim': 256,   # 生成器中Siren网络的潜伏密度
+    'grad_clip': 1,   # Grad clipping参数
+    'model': 'TALLSIREN',   # 生成器中使用的Siren架构。(SPATIALSIRENBASELINE | TALLSIREN)
+    'generator': 'ImplicitGenerator3d',   # 生成器类(ImplicitGenerator3d)
+    'discriminator': 'ProgressiveEncoderDiscriminator',   # 鉴别器类(ProgressiveEncoderDiscriminator | ProgressiveDiscriminator)
+    'dataset': 'Ear',   # 训练数据集
+    'clamp_mode': 'relu',   # Siren密度输出的箝制函数(relu | softplus)
+    'z_dist': 'gaussian',   # 潜伏向量分布(gaussian | uniform)
+    'hierarchical_sample': True,   # 启用NeRF算法中的分层采样标志。(使采样点的数量增加一倍)
+    'z_lambda': 0,   # 实验潜在代码位置一致性损失的权重
+    'pos_lambda': 0,   # 实验位置一致性损失的权重参数
+    'last_back': False,   # 在射线上使用上次采样颜色填充背景颜色的标志
+    'eval_last_back': True,   # 在评估射线上使用上次采样颜色填充背景颜色的标志
+    'learnable_dist': False,
+
+}

@@ -71,7 +71,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
 
 
     curriculum = getattr(curriculums, opt.curriculum)
-    metadata = curriculums.extract_metadata(curriculum, 0)
+    metadata = curriculums.extract_metadata(curriculum, 3)
 
     fixed_z = z_sampler((25, 256), device='cpu', dist=metadata['z_dist'])
 
@@ -193,7 +193,9 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 torch.save(scaler.state_dict(), os.path.join(opt.output_dir, now + 'scaler.pth'))
             metadata = curriculums.extract_metadata(curriculum, discriminator.step)
 
-            if dataloader.batch_size != metadata['batch_size']: break
+            if dataloader.batch_size != metadata['batch_size']:
+                print("dataloader.batch_size != metadata['batch_size']:dataloader.batch_size = "+dataloader.batch_size+" and metadata['batch_size']:"+metadata['batch_size'])
+                break
 
             if scaler.get_scale() < 1:
                 scaler.update(1.)
@@ -306,7 +308,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
-                            copied_metadata['img_size'] = 128
+                            copied_metadata['img_size'] = 64
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_fixed.png"), nrow=5, normalize=True)
 
@@ -315,7 +317,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['h_mean'] += 0.5
-                            copied_metadata['img_size'] = 128
+                            copied_metadata['img_size'] = 64
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_tilted.png"), nrow=5, normalize=True)
 
@@ -326,7 +328,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
-                            copied_metadata['img_size'] = 128
+                            copied_metadata['img_size'] = 64
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_fixed_ema.png"), nrow=5, normalize=True)
 
@@ -335,14 +337,14 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['h_mean'] += 0.5
-                            copied_metadata['img_size'] = 128
+                            copied_metadata['img_size'] = 64
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_tilted_ema.png"), nrow=5, normalize=True)
 
                     with torch.no_grad():
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
-                            copied_metadata['img_size'] = 128
+                            copied_metadata['img_size'] = 64
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['psi'] = 0.7
                             gen_imgs = generator_ddp.module.staged_forward(torch.randn_like(fixed_z).to(device),  **copied_metadata)[0]
@@ -365,7 +367,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 generated_dir = os.path.join(opt.output_dir, 'evaluation/generated')
 
                 if rank == 0:
-                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, data_path=metadata["dataset_path"], target_size=128)
+                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, data_path=metadata["dataset_path"], target_size=64)
                 dist.barrier()
                 ema.store(generator_ddp.parameters())
                 ema.copy_to(generator_ddp.parameters())
@@ -374,7 +376,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 ema.restore(generator_ddp.parameters())
                 dist.barrier()
                 if rank == 0:
-                    fid = fid_evaluation.calculate_fid(metadata['dataset'], generated_dir, target_size=128)
+                    fid = fid_evaluation.calculate_fid(metadata['dataset'], generated_dir, target_size=64)
                     with open(os.path.join(opt.output_dir, f'fid.txt'), 'a') as f:
                         f.write(f'\n{discriminator.step}:{fid}')
 
@@ -392,7 +394,7 @@ if __name__ == '__main__':
     # 指定训练过程中的epoch数
     parser.add_argument("--n_epochs", type=int, default=1000, help="number of epochs of training")
     # 指定在多少个steps后进行一次采样
-    parser.add_argument("--sample_interval", type=int, default=100, help="interval between image sampling")
+    parser.add_argument("--sample_interval", type=int, default=50, help="interval between image sampling")
     # 指定输出目录
     parser.add_argument('--output_dir', type=str, default='debug')
     # 指定加载已保存模型的目录
@@ -400,13 +402,13 @@ if __name__ == '__main__':
     # 指定使用的课程数据集
     parser.add_argument('--curriculum', type=str, required=True)
     # 指定在多少个steps后进行一次评估
-    parser.add_argument('--eval_freq', type=int, default=3760)
+    parser.add_argument('--eval_freq', type=int, default=255)
     # 指定端口号
     parser.add_argument('--port', type=str, default='12355')
     # 设置当前step
     parser.add_argument('--set_step', type=int, default=None)
     # 指定在多少个steps后保存一次模型
-    parser.add_argument('--model_save_interval', type=int, default=3760)
+    parser.add_argument('--model_save_interval', type=int, default=255)
 
     opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)

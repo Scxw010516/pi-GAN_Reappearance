@@ -21,6 +21,8 @@ def output_real_images(dataloader, num_imgs, real_dir):
     img_counter = 0
     batch_size = dataloader.batch_size
     dataloader = iter(dataloader)
+    print("\n******************" + batch_size + "\n")
+    print("\n******************" + num_imgs + "\n")
     for i in range(num_imgs//batch_size):
         real_imgs, _ = next(dataloader)
 
@@ -28,7 +30,7 @@ def output_real_images(dataloader, num_imgs, real_dir):
             save_image(img, os.path.join(real_dir, f'{img_counter:0>5}.jpg'), normalize=True, range=(-1, 1))
             img_counter += 1
 
-def setup_evaluation(dataset_name, generated_dir, data_path, target_size=128, num_imgs=7520):
+def setup_evaluation(dataset_name, generated_dir, data_path, target_size=64, num_imgs=768):
     # Only make real images if they haven't been made yet
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
     if not os.path.exists(real_dir):
@@ -42,10 +44,10 @@ def setup_evaluation(dataset_name, generated_dir, data_path, target_size=128, nu
         os.makedirs(generated_dir, exist_ok=True)
     return real_dir
 
-def output_images(generator, input_metadata, rank, world_size, output_dir, num_imgs=2048):
+def output_images(generator, input_metadata, rank, world_size, output_dir, num_imgs=768):
     metadata = copy.deepcopy(input_metadata)
-    metadata['img_size'] = 128
-    metadata['batch_size'] = 4
+    metadata['img_size'] = 64
+    metadata['batch_size'] = 14
 
     metadata['h_stddev'] = metadata.get('h_stddev_eval', metadata['h_stddev'])
     metadata['v_stddev'] = metadata.get('v_stddev_eval', metadata['v_stddev'])
@@ -68,19 +70,19 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
                 if rank == 0: pbar.update(world_size)
     if rank == 0: pbar.close()
 
-def calculate_fid(dataset_name, generated_dir, target_size=128):
+def calculate_fid(dataset_name, generated_dir, target_size=64):
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
-    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 1, 'cuda', 2048)
+    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 14, 'cuda', 768)
     torch.cuda.empty_cache()
 
     return fid
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='CATS')
+    parser.add_argument('--dataset', type=str, default='Ear')
     parser.add_argument('--img_size', type=int, default=64)
-    parser.add_argument('--num_imgs', type=int, default=7520)
+    parser.add_argument('--num_imgs', type=int, default=768)
 
     opt = parser.parse_args()
-
+    print("\n******************" + opt.img_size + "\n")
     real_images_dir = setup_evaluation(opt.dataset, None, target_size=opt.img_size, num_imgs=opt.num_imgs)

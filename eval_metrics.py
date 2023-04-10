@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=str, default='temp')
     parser.add_argument('--num_images', type=int, default=2048)
     parser.add_argument('--max_batch_size', type=int, default=94800000)
-    parser.add_argument('--curriculum', type=str, default='CELEBA')
+    parser.add_argument('--curriculum', type=str, default='CATS')
 
     opt = parser.parse_args()
 
