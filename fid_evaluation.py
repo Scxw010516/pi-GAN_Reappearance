@@ -28,12 +28,12 @@ def output_real_images(dataloader, num_imgs, real_dir):
             save_image(img, os.path.join(real_dir, f'{img_counter:0>5}.jpg'), normalize=True, range=(-1, 1))
             img_counter += 1
 
-def setup_evaluation(dataset_name, generated_dir, target_size=128, num_imgs=8000):
+def setup_evaluation(dataset_name, generated_dir, data_path, target_size=128, num_imgs=7520):
     # Only make real images if they haven't been made yet
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
     if not os.path.exists(real_dir):
         os.makedirs(real_dir)
-        dataloader, CHANNELS = datasets.get_dataset(dataset_name, img_size=target_size)
+        dataloader, CHANNELS = datasets.get_dataset(dataset_name, img_size=target_size, dataset_path=data_path)
         print('outputting real images...')
         output_real_images(dataloader, num_imgs, real_dir)
         print('...done')
@@ -70,7 +70,7 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
 
 def calculate_fid(dataset_name, generated_dir, target_size=128):
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
-    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 128, 'cuda', 2048)
+    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 1, 'cuda', 2048)
     torch.cuda.empty_cache()
 
     return fid

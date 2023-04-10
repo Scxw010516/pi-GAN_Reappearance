@@ -365,7 +365,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 generated_dir = os.path.join(opt.output_dir, 'evaluation/generated')
 
                 if rank == 0:
-                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, target_size=128)
+                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, data_path=metadata["dataset_path"], target_size=128)
                 dist.barrier()
                 ema.store(generator_ddp.parameters())
                 ema.copy_to(generator_ddp.parameters())
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     # 指定训练过程中的epoch数
     parser.add_argument("--n_epochs", type=int, default=1000, help="number of epochs of training")
     # 指定在多少个steps后进行一次采样
-    parser.add_argument("--sample_interval", type=int, default=376, help="interval between image sampling")
+    parser.add_argument("--sample_interval", type=int, default=100, help="interval between image sampling")
     # 指定输出目录
     parser.add_argument('--output_dir', type=str, default='debug')
     # 指定加载已保存模型的目录
@@ -411,7 +411,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)
     os.makedirs(opt.output_dir, exist_ok=True)  # 创建一个新的输出目录
-    #mp.set_start_method('spawn')  # 设置进程启动方法为 'spawn'
+    # mp.set_start_method('spawn')  # 设置进程启动方法为 'spawn'
     # mp.set_start_method('fork')
     # num_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))  # 获取系统环境变量CUDA_VISIBLE_DEVICES的值，获取可用GPU数
     num_gpus = 1
