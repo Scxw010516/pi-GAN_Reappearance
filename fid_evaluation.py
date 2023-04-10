@@ -16,6 +16,7 @@ import tqdm
 
 import datasets
 import curriculums
+import train
 
 def output_real_images(dataloader, num_imgs, real_dir):
     img_counter = 0
@@ -30,7 +31,7 @@ def output_real_images(dataloader, num_imgs, real_dir):
             save_image(img, os.path.join(real_dir, f'{img_counter:0>5}.jpg'), normalize=True, range=(-1, 1))
             img_counter += 1
 
-def setup_evaluation(dataset_name, generated_dir, data_path, target_size=64, num_imgs=768):
+def setup_evaluation(dataset_name, generated_dir, data_path, target_size, num_imgs=768):
     # Only make real images if they haven't been made yet
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
     if not os.path.exists(real_dir):
@@ -46,8 +47,8 @@ def setup_evaluation(dataset_name, generated_dir, data_path, target_size=64, num
 
 def output_images(generator, input_metadata, rank, world_size, output_dir, num_imgs=768):
     metadata = copy.deepcopy(input_metadata)
-    metadata['img_size'] = 64
-    metadata['batch_size'] = 14
+    # metadata['img_size'] = 64
+    # metadata['batch_size'] = 14
 
     metadata['h_stddev'] = metadata.get('h_stddev_eval', metadata['h_stddev'])
     metadata['v_stddev'] = metadata.get('v_stddev_eval', metadata['v_stddev'])
@@ -70,9 +71,9 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
                 if rank == 0: pbar.update(world_size)
     if rank == 0: pbar.close()
 
-def calculate_fid(dataset_name, generated_dir, target_size=64):
+def calculate_fid(dataset_name, generated_dir, batch_size, target_size):
     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
-    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 14, 'cuda', 768)
+    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], batch_size, 'cuda', 768)
     torch.cuda.empty_cache()
 
     return fid
