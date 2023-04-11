@@ -264,6 +264,7 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+all
 
 ### Output ###
+EarOutputDir3/
 EvalImages/
 Output/
 Pre_train_model/
