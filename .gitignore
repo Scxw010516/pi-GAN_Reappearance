@@ -269,3 +269,7 @@ EvalImages/
 Pre_train_model/
 checkmodel.py
 imgs/
+EarOutputDir3/
+EvalImages/
+Output/
+Pre_train_model/
