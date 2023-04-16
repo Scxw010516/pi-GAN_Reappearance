@@ -308,7 +308,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
-                            copied_metadata['img_size'] = metadata["img_size"]
+                            copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_fixed.png"), nrow=5, normalize=True)
 
@@ -317,7 +317,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['h_mean'] += 0.5
-                            copied_metadata['img_size'] = metadata["img_size"]
+                            copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_tilted.png"), nrow=5, normalize=True)
 
@@ -328,7 +328,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
-                            copied_metadata['img_size'] = metadata["img_size"]
+                            copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_fixed_ema.png"), nrow=5, normalize=True)
 
@@ -337,14 +337,14 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                             copied_metadata = copy.deepcopy(metadata)
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['h_mean'] += 0.5
-                            copied_metadata['img_size'] = metadata["img_size"]
+                            copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(fixed_z.to(device),  **copied_metadata)[0]
                     save_image(gen_imgs[:25], os.path.join(opt.output_dir, f"{discriminator.step}_tilted_ema.png"), nrow=5, normalize=True)
 
                     with torch.no_grad():
                         with torch.cuda.amp.autocast():
                             copied_metadata = copy.deepcopy(metadata)
-                            copied_metadata['img_size'] = metadata["img_size"]
+                            copied_metadata['img_size'] = 128
                             copied_metadata['h_stddev'] = copied_metadata['v_stddev'] = 0
                             copied_metadata['psi'] = 0.7
                             gen_imgs = generator_ddp.module.staged_forward(torch.randn_like(fixed_z).to(device),  **copied_metadata)[0]
@@ -367,7 +367,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 generated_dir = os.path.join(opt.output_dir, 'evaluation/generated')
 
                 if rank == 0:
-                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, data_path=metadata["dataset_path"], target_size=metadata["img_size"])
+                    fid_evaluation.setup_evaluation(metadata['dataset'], generated_dir, data_path=metadata["dataset_path"], target_size=128)
                 dist.barrier()
                 ema.store(generator_ddp.parameters())
                 ema.copy_to(generator_ddp.parameters())
@@ -376,7 +376,7 @@ def train(rank, world_size, opt, ema=None, ema2=None):
                 ema.restore(generator_ddp.parameters())
                 dist.barrier()
                 if rank == 0:
-                    fid = fid_evaluation.calculate_fid(metadata['dataset'], generated_dir, metadata["batch_size"], metadata["img_size"])
+                    fid = fid_evaluation.calculate_fid(metadata['dataset'], generated_dir, target_size=128)
                     with open(os.path.join(opt.output_dir, f'fid.txt'), 'a') as f:
                         f.write(f'\n{discriminator.step}:{fid}')
 
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     # 设置当前step
     parser.add_argument('--set_step', type=int, default=None)
     # 指定在多少个steps后保存一次模型
-    parser.add_argument('--model_save_interval', type=int, default=1000)
+    parser.add_argument('--model_save_interval', type=int, default=500)
 
     opt = parser.parse_args()  # 返回包含所有参数值的命名空间对象opt
     print(opt)

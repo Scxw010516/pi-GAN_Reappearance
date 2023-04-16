@@ -246,12 +246,12 @@ CATS = {
 }
 
 Ear = {
-    # 0: {'batch_size': 14, 'num_steps': 24, 'img_size': 64, 'batch_split': 7, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
-    # int(200e3): {},
-    0: {'batch_size': 30, 'num_steps': 48, 'img_size': 64, 'batch_split': 1, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
-    int(1e3): {'batch_size': 14, 'num_steps': 48, 'img_size': 128, 'batch_split': 2, 'gen_lr': 2e-5, 'disc_lr': 2e-4},
-    int(3e3): {'batch_size': 10, 'num_steps': 48, 'img_size': 256, 'batch_split': 5, 'gen_lr': 10e-6, 'disc_lr': 10e-5},
-    int(10e3): {},
+    0: {'batch_size': 10, 'num_steps': 24, 'img_size': 128, 'batch_split': 5, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
+    int(200e3): {},
+    # 0: {'batch_size': 30, 'num_steps': 48, 'img_size': 64, 'batch_split': 1, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
+    # int(1e3): {'batch_size': 14, 'num_steps': 48, 'img_size': 128, 'batch_split': 2, 'gen_lr': 2e-5, 'disc_lr': 2e-4},
+    # int(3e3): {'batch_size': 10, 'num_steps': 48, 'img_size': 256, 'batch_split': 5, 'gen_lr': 10e-6, 'disc_lr': 10e-5},
+    # int(10e3): {},
 
     'dataset_path': 'D:/DataSets/Ear/Ear_train/*.jpg',
     'fov': 12,     # 相机视场
