@@ -84,10 +84,12 @@ def train(rank, world_size, opt, ema=None, ema2=None):
     if opt.load_dir != '':
         generator = torch.load(os.path.join(opt.load_dir, 'generator.pth'), map_location=device)
         discriminator = torch.load(os.path.join(opt.load_dir, 'discriminator.pth'), map_location=device)
-        ema = ExponentialMovingAverage(generator.parameters(), decay=0.999)
-        ema2 = ExponentialMovingAverage(generator.parameters(), decay=0.9999)
-        ema.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device))
-        ema2.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device))
+        # ema = ExponentialMovingAverage(generator.parameters(), decay=0.999)
+        # ema2 = ExponentialMovingAverage(generator.parameters(), decay=0.9999)
+        # ema.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device))
+        # ema2.load_state_dict(torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device))
+        ema = torch.load(os.path.join(opt.load_dir, 'ema.pth'), map_location=device)
+        ema2 = torch.load(os.path.join(opt.load_dir, 'ema2.pth'), map_location=device)
     else:
         generator = getattr(generators, metadata['generator'])(SIREN, metadata['latent_dim']).to(device)
         discriminator = getattr(discriminators, metadata['discriminator'])().to(device)

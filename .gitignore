@@ -266,7 +266,7 @@ pyrightconfig.json
 ### Output ###
 Output/
 EvalImages/
-Pre_train_model/
+#Pre_train_model/
 checkmodel.py
 imgs/
 EarOutputDir3/
