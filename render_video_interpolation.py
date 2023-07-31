@@ -2,6 +2,7 @@ import argparse
 import math
 import os
 
+from torch_ema import ExponentialMovingAverage
 from torchvision.utils import save_image
 
 import torch
@@ -66,7 +67,9 @@ def tensor_to_PIL(img):
 
 generator = torch.load(opt.path, map_location=torch.device(device))
 ema_file = opt.path.split('generator')[0] + 'ema.pth'
-ema = torch.load(ema_file)
+# ema = torch.load(ema_file)
+ema = ExponentialMovingAverage(generator.parameters(), decay=0.999)
+ema.load_state_dict(torch.load(ema_file))
 ema.copy_to(generator.parameters())
 generator.set_device(device)
 generator.eval()
@@ -122,3 +125,5 @@ for i, seed in enumerate(opt.seeds):
             writer.writeFrame(np.array(frame))
 
 writer.close()
+
+# python render_video_interpolation.py Output/EarOutputDir4_autodl_64_CARLA/generator.pth --curriculum Ear --output_dir Output/EarOutputDir4_64_generate_video_interpolation --image_size 256 --seeds 0 1 2 3

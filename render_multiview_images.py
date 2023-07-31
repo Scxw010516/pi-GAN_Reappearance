@@ -6,6 +6,7 @@ import sys
 import os
 
 import torch
+from torch_ema import ExponentialMovingAverage
 from torchvision.utils import save_image
 from tqdm import tqdm
 
@@ -59,12 +60,14 @@ if __name__ == '__main__':
 
     generator = torch.load(opt.path, map_location=torch.device(device))
     ema_file = opt.path.split('generator')[0] + 'ema.pth'
-    ema = torch.load(ema_file)
+    # ema = torch.load(ema_file)
+    ema = ExponentialMovingAverage(generator.parameters(), decay=0.999)
+    ema.load_state_dict(torch.load(ema_file))
     ema.copy_to(generator.parameters())
     generator.set_device(device)
     generator.eval()
     
-    face_angles = [-0.5, -0.25, 0., 0.25, 0.5]
+    face_angles = [-0.7, -0.65, -0.5, -0.35, -0.25, 0., 0.25, 0.35]
 
     face_angles = [a + curriculum['h_mean'] for a in face_angles]
 
@@ -77,3 +80,5 @@ if __name__ == '__main__':
             img, tensor_img, depth_map = generate_img(generator, z, **curriculum)
             images.append(tensor_img)
         save_image(torch.cat(images), os.path.join(opt.output_dir, f'grid_{seed}.png'), normalize=True)
+
+# python render_multiview_images.py Output/EarOutputDir4_autodl_64_CARLA/generator.pth --curriculum Ear --output_dir Output/EarOutputDir4_64_generate_multi --image_size 64 --seeds 0 1 2 3

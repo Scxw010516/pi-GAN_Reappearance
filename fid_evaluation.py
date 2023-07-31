@@ -71,19 +71,29 @@ def output_images(generator, input_metadata, rank, world_size, output_dir, num_i
                 if rank == 0: pbar.update(world_size)
     if rank == 0: pbar.close()
 
-def calculate_fid(dataset_name, generated_dir, target_size = 128):
-    real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
-    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 20, 'cuda', 768)
+def calculate_fid():
+    real_dir = 'fastgan/Ear_real_images_256'
+    generated_dir = "fastgan/Ear_generate_images_256"
+    fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 20, 'cuda', 2048)
     torch.cuda.empty_cache()
 
     return fid
 
+# def calculate_fid(dataset_name, generated_dir, target_size = 128):
+#     real_dir = os.path.join('EvalImages', dataset_name + '_real_images_' + str(target_size))
+#     fid = fid_score.calculate_fid_given_paths([real_dir, generated_dir], 20, 'cuda', 768)
+#     torch.cuda.empty_cache()
+#
+#     return fid
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='Ear')
-    parser.add_argument('--img_size', type=int, default=128)
-    parser.add_argument('--num_imgs', type=int, default=768)
+    parser.add_argument('--img_size', type=int, default=256)
+    parser.add_argument('--num_imgs', type=int, default=2048)
 
     opt = parser.parse_args()
-    print("\n******************" + opt.img_size + "\n")
-    real_images_dir = setup_evaluation(opt.dataset, None, target_size=opt.img_size, num_imgs=opt.num_imgs)
+    # print("\n******************" + opt.img_size + "\n")
+    fid = calculate_fid()
+    print(fid)
+    # real_images_dir = setup_evaluation(opt.dataset, None, target_size=opt.img_size, num_imgs=opt.num_imgs)
