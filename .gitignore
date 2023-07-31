@@ -271,3 +271,8 @@ checkmodel.py
 imgs/
 EarOutputDir3/
 
+/fastgan_eval
+/stylesdf_eval
+/.vscode
+/.idea
+/pi-GAN_Reappearance.zip
